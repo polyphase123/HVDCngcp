@@ -813,46 +813,85 @@
           </div>
 
           <!-- Technical Comparison Matrix Table -->
-          <div class="clean-card p-5">
-            <h3 class="text-sm font-bold text-slate-800 mb-3 flex items-center space-x-2">
-              <i data-lucide="table" class="w-4 h-4 text-blue-600"></i>
-              <span>Comprehensive Engineering & Financial Comparison: HVDC vs HVAC for Philippine Grid</span>
+          <div class="clean-card p-5 space-y-4">
+            <h3 class="text-sm font-bold text-slate-800 flex items-center space-x-2">
+              <i data-lucide="layers" class="w-4 h-4 text-blue-600"></i>
+              <span>Dual Strategic Links: Luzon–Visayas vs Mindanao–Visayas (MVIP) HVDC vs HVAC Breakdown</span>
             </h3>
 
-            <div class="overflow-x-auto">
+            <!-- Dual Link Detailed Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <!-- Card 1: Luzon-Visayas -->
+              <div class="p-4 bg-blue-50/50 rounded-xl border border-blue-200 space-y-2.5">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold text-blue-800 uppercase tracking-wider">1. Luzon–Visayas (Leyte–Luzon)</span>
+                  <span class="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded font-mono font-bold">±350 kV LCC (440 MW)</span>
+                </div>
+                <div class="text-xs text-slate-700 space-y-1.5 leading-relaxed">
+                  <p><strong>Route Topology:</strong> 430 km overhead line + 21 km subsea across turbulent San Bernardino Strait.</p>
+                  <p><strong>HVDC Engineering Purpose:</strong> Bridges 450+ km while <em>asynchronously decoupling</em> the large Luzon grid (~15,000 MW) from the small Visayas grid (~2,000 MW), enabling steady baseload geothermal wheeling.</p>
+                  <div class="p-2.5 bg-rose-50 border border-rose-200 rounded text-[11px] text-rose-900">
+                    <strong>⚠️ If 230 kV HVAC was installed:</strong>
+                    <ul class="list-disc list-inside mt-1 space-y-0.5 text-rose-800">
+                      <li>Severe <strong>inter-area power oscillations (0.2–0.5 Hz)</strong> causing generator rotor desynchronization.</li>
+                      <li>Power transfer angle exceeds stability limit (&delta; > 35° over 450 km).</li>
+                      <li>Any fault or lightning in Bicol/South Luzon synchronously trips Visayas geothermal units.</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Card 2: Mindanao-Visayas (MVIP) -->
+              <div class="p-4 bg-teal-50/50 rounded-xl border border-teal-200 space-y-2.5">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold text-teal-800 uppercase tracking-wider">2. Mindanao–Visayas (MVIP Link)</span>
+                  <span class="text-[10px] bg-teal-100 text-teal-700 px-2 py-0.5 rounded font-mono font-bold">±350 kV VSC-MMC (450 MW)</span>
+                </div>
+                <div class="text-xs text-slate-700 space-y-1.5 leading-relaxed">
+                  <p><strong>Route Topology:</strong> 526 km overhead line + 92 km subsea across the 650m-deep Bohol Sea.</p>
+                  <p><strong>HVDC Engineering Purpose:</strong> Eliminates subsea cable charging current in deep waters, provides sub-50ms fast frequency support, dynamic STATCOM reactive voltage control, and black-start.</p>
+                  <div class="p-2.5 bg-rose-50 border border-rose-200 rounded text-[11px] text-rose-900">
+                    <strong>⚠️ If 230 kV HVAC was installed:</strong>
+                    <ul class="list-disc list-inside mt-1 space-y-0.5 text-rose-800">
+                      <li><strong>56% active capacity lost</strong> (450 MW collapses to 198.9 MW) due to 1,013 A subsea charging current ($Q_c = 403.6$ MVAR).</li>
+                      <li><strong>₱29.29 Billion in wasted system losses</strong> over 30 years passed to consumers.</li>
+                      <li>Impossibility of mid-span reactor platforms in 650m deep waters and typhoon corridors.</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Summary Table -->
+            <div class="overflow-x-auto pt-2">
               <table class="w-full text-left text-xs border-collapse">
                 <thead>
                   <tr class="bg-slate-50 border-b border-slate-200 text-slate-600">
                     <th class="p-2.5 font-bold">Dimension</th>
-                    <th class="p-2.5 font-bold text-blue-700">HVDC (High-Voltage Direct Current)</th>
-                    <th class="p-2.5 font-bold text-rose-700">HVAC (High-Voltage Alternating Current)</th>
+                    <th class="p-2.5 font-bold text-blue-700">Luzon–Visayas Link</th>
+                    <th class="p-2.5 font-bold text-teal-700">Mindanao–Visayas (MVIP)</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 text-slate-700">
                   <tr>
-                    <td class="p-2.5 font-semibold text-slate-800">ERC Approved Investment Cost (Capex)</td>
-                    <td class="p-2.5 text-emerald-700"><strong>₱51.30 Billion (~$916M USD)</strong> filed under ERC Case No. 2017-057 RC. Lower subsea cable cost (2 conductors) and zero offshore platforms.</td>
-                    <td class="p-2.5 text-rose-700"><strong>~₱64.20 Billion (~$1.15 Billion USD)</strong>. Requires 3-phase subsea double-circuits, deep-water offshore platforms, and massive STATCOM shunt reactor yards.</td>
+                    <td class="p-2.5 font-semibold text-slate-800">Subsea / Overhead Distance</td>
+                    <td class="p-2.5">21 km subsea + 430 km overhead (451 km total)</td>
+                    <td class="p-2.5">92 km subsea + 526 km overhead (618 km total)</td>
                   </tr>
                   <tr>
-                    <td class="p-2.5 font-semibold text-slate-800">Annual System Losses & Cost (PHP/yr)</td>
-                    <td class="p-2.5 text-emerald-700"><strong>~2.7% Loss (~67 GWh/yr, ~₱461M/yr).</strong> Steady DC current flows without dielectric heating or reactive current inflation.</td>
-                    <td class="p-2.5 text-rose-700"><strong>~7.2% to 8.5% Loss (~180 GWh/yr, ~₱1,230M/yr).</strong> Heavy continuous $I_c$ charging current causes <strong>₱736+ Million / year higher losses</strong>!</td>
+                    <td class="p-2.5 font-semibold text-slate-800">HVDC Technology Used</td>
+                    <td class="p-2.5 text-blue-700 font-bold">±350 kV LCC (Line-Commutated Converter)</td>
+                    <td class="p-2.5 text-teal-700 font-bold">±350 kV VSC-MMC (Voltage Source Converter)</td>
                   </tr>
                   <tr>
-                    <td class="p-2.5 font-semibold text-slate-800">30-Year Lifecycle Loss Cost</td>
-                    <td class="p-2.5 text-emerald-700"><strong>₱13.84 Billion</strong> cumulative loss valuation.</td>
-                    <td class="p-2.5 text-rose-700"><strong>₱36.90 Billion</strong> (Over <strong>₱23 Billion PHP wasted</strong> in system loss charges passed to electric consumers!).</td>
+                    <td class="p-2.5 font-semibold text-slate-800">Primary Reason HVAC Fails</td>
+                    <td class="p-2.5 text-rose-700"><strong>Dynamic Stability:</strong> 450 km AC line causes inter-area oscillations and angle instability between asymmetrical grids.</td>
+                    <td class="p-2.5 text-rose-700"><strong>Cable Physics:</strong> 92 km subsea AC cable capacitance generates 403.6 MVAR charging current, losing 56% capacity.</td>
                   </tr>
                   <tr>
-                    <td class="p-2.5 font-semibold text-slate-800">Subsea Cable Charging Current ($I_c$)</td>
-                    <td class="p-2.5 text-emerald-700"><strong>Zero ($I_c = 0$ in DC).</strong> Cable transfers 100% active MW without distance derating.</td>
-                    <td class="p-2.5 text-rose-700"><strong>Severe ($I_c = 2\pi f C V$).</strong> 92 km subsea cable generates ~367 MVAR, choking active capacity.</td>
-                  </tr>
-                  <tr>
-                    <td class="p-2.5 font-semibold text-slate-800">Grid Synchronization & Stability</td>
-                    <td class="p-2.5 text-emerald-700"><strong>Asynchronous Firewall:</strong> Luzon, Visayas, and Mindanao can run with frequency differences; faults are completely buffered.</td>
-                    <td class="p-2.5 text-rose-700"><strong>Rigid Synchronous Lock:</strong> A generator trip in Cebu violently swings rotor angles in Luzon/Mindanao, risking cascading national blackouts.</td>
+                    <td class="p-2.5 font-semibold text-slate-800">System Loss Impact</td>
+                    <td class="p-2.5">Lower DC line resistance allows high-efficiency bulk power wheeling from geothermal fields.</td>
+                    <td class="p-2.5 text-emerald-700 font-bold">HVDC saves 150.2 GWh/yr (₱976.2M/yr), protecting consumers by ₱29.29 Billion over 30 years.</td>
                   </tr>
                 </tbody>
               </table>
