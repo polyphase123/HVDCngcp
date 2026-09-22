@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Philippine HVDC Interconnections & HVAC What-If Simulator | NGCP Power Grid Lab</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- KaTeX for crisp math rendering -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+  <!-- Leaflet Map CSS & JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col">
+
+  <!-- TOP APP HEADER -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        
+        <!-- Logo & Title -->
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-sm font-black text-lg">
+            ⚡
+          </div>
+          <div>
+            <div class="flex items-center space-x-2">
+              <h1 class="text-base sm:text-lg font-bold text-slate-900 leading-tight">Philippine HVDC & Grid Interconnection Explorer</h1>
+              <span class="badge-clean bg-blue-50 text-blue-700 border border-blue-200 text-[10px] font-semibold">NGCP Grid Lab</span>
+            </div>
+            <p class="text-xs text-slate-500">Luzon–Visayas (Leyte-Luzon) • Visayas–Mindanao (MVIP) • HVAC "What-If" Analysis</p>
+          </div>
+        </div>
+
+        <!-- Status & One Grid Badge -->
+        <div class="hidden md:flex items-center space-x-4">
+          <div class="flex items-center space-x-2 text-xs bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200">
+            <span class="flow-indicator flow-live"></span>
+            <span class="font-medium text-slate-700">Grid Status: <strong class="text-emerald-600">One Grid Philippines (Unified)</strong></span>
+          </div>
+          <div class="text-right">
+            <span class="text-[11px] text-slate-400 block">System Frequency</span>
+            <span class="text-xs font-mono font-bold text-slate-800">60.00 Hz (Nominal)</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- CLEAN TAB NAVIGATION BAR -->
+    <div class="border-t border-slate-100 bg-slate-50/60 px-4 sm:px-6 lg:px-8">
+      <div class="max-w-7xl mx-auto flex space-x-1 sm:space-x-2 overflow-x-auto py-2">
+        
+        <button class="tab-btn active px-3.5 py-1.5 rounded-lg text-xs font-medium flex items-center space-x-1.5 transition-all text-slate-600 hover:text-slate-900 border border-transparent" data-tab="overview">
+          <i data-lucide="map" class="w-3.5 h-3.5"></i>
+          <span>Grid Map & Dispatch</span>
+        </button>
+
+        <button class="tab-btn px-3.5 py-1.5 rounded-lg text-xs font-medium flex items-center space-x-1.5 transition-all text-slate-600 hover:text-slate-900 border border-transparent" data-tab="luzon-visayas">
+          <i data-lucide="zap" class="w-3.5 h-3.5"></i>
+          <span>Luzon–Visayas (Leyte-Luzon)</span>
+        </button>
+
+        <button class="tab-btn px-3.5 py-1.5 rounded-lg text-xs font-medium flex items-center space-x-1.5 transition-all text-slate-600 hover:text-slate-900 border border-transparent" data-tab="visayas-mindanao">
+          <i data-lucide="link-2" class="w-3.5 h-3.5"></i>
+          <span>Visayas–Mindanao (MVIP)</span>
+        </button>
+
+        <button class="tab-btn px-3.5 py-1.5 rounded-lg text-xs font-medium flex items-center space-x-1.5 transition-all text-rose-700 bg-rose-50/50 hover:bg-rose-50 border border-rose-100" data-tab="hvac-whatif">
+          <i data-lucide="help-circle" class="w-3.5 h-3.5 text-rose-600"></i>
+          <span class="font-bold">"What-If NGCP Installed HVAC?"</span>
+        </button>
+
+        <button class="tab-btn px-3.5 py-1.5 rounded-lg text-xs font-medium flex items-center space-x-1.5 transition-all text-slate-600 hover:text-slate-900 border border-transparent" data-tab="converter-tech">
+          <i data-lucide="cpu" class="w-3.5 h-3.5"></i>
+          <span>Converter Schematics (LCC vs VSC)</span>
+        </button>
+
+        <button class="tab-btn px-3.5 py-1.5 rounded-lg text-xs font-medium flex items-center space-x-1.5 transition-all text-slate-600 hover:text-slate-900 border border-transparent" data-tab="knowledge-base">
+          <i data-lucide="book-open" class="w-3.5 h-3.5"></i>
+          <span>Formulas & Grid Code</span>
+        </button>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT CONTAINER -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    <!-- ========================================================================= -->
+    <!-- TAB 1: OVERVIEW & INTERACTIVE MAP & POWER DISPATCH -->
+    <!-- ========================================================================= -->
+    <section id="pane-overview" class="tab-pane space-y-6">
+      
+      <!-- Quick Welcome / Context Header -->
+      <div class="clean-card p-5 bg-gradient-to-r from-white via-blue-50/20 to-white">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div class="space-y-1">
+            <div class="inline-flex items-center space-x-2 text-xs font-bold text-blue-700 uppercase tracking-wider">
+              <span>National Transmission Backbone</span>
+              <span>•</span>
+              <span class="text-slate-500 font-normal">Operated by NGCP</span>
+            </div>
+            <h2 class="text-lg sm:text-xl font-bold text-slate-900">Philippine Tri-Grid Power Flow & Interconnection Simulator</h2>
+            <p class="text-xs sm:text-sm text-slate-600 max-w-3xl leading-relaxed">
+              The Philippine grid links Luzon, the Visayas archipelagic islands, and Mindanao across high-voltage direct current (HVDC) submarine and overhead corridors. Use the interactive map and dispatch controls below to simulate power transfers across the country.
+            </p>
+          </div>
+
+          <!-- Mode Switcher -->
+          <div class="flex items-center space-x-2 bg-slate-100 p-1 rounded-lg border border-slate-200 self-start md:self-auto">
+            <button id="btn-mode-hvdc" class="px-3 py-1.5 text-xs font-semibold rounded-md bg-white text-blue-700 shadow-xs transition-all">
+              HVDC (As Built)
+            </button>
+            <button id="btn-mode-hvac" class="px-3 py-1.5 text-xs font-semibold rounded-md text-slate-600 hover:text-rose-700 transition-all">
+              HVAC (What-If)
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Layout: Map & Dispatch Console -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Left 7 Cols: Interactive SVG Map -->
+        <div class="lg:col-span-7">
+          <div id="map-container">
+            <!-- Rendered by hvdc-map.js -->
+          </div>
+        </div>
+
+        <!-- Right 5 Cols: Dispatch Console & Island Power Balances -->
+        <div class="lg:col-span-5 space-y-5">
+          
+          <!-- Dispatch Controller Card -->
+          <div class="clean-card p-5 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div class="flex items-center space-x-2">
+                <i data-lucide="sliders" class="w-4 h-4 text-blue-600"></i>
+                <h3 class="text-sm font-bold text-slate-800">HVDC Active Power Dispatch Controller</h3>
+              </div>
+              <span class="text-[11px] font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">Bi-Directional</span>
+            </div>
+
+            <!-- Slider 1: Leyte - Luzon Link -->
+            <div class="space-y-1.5">
+              <div class="flex justify-between items-center text-xs">
+                <span class="font-semibold text-slate-700">Leyte–Luzon HVDC Transfer</span>
+                <span id="val-dispatch-lv" class="font-mono font-bold text-blue-600">380 MW (Visayas ➔ Luzon)</span>
+              </div>
+              <input id="slider-dispatch-lv" type="range" min="-440" max="440" step="10" value="380" 
+                     class="w-full h-2 bg-slate-200 rounded-lg cursor-pointer">
+              <div class="flex justify-between text-[10px] text-slate-400">
+                <span>-440 MW (Luzon Export)</span>
+                <span>0 MW</span>
+                <span>+440 MW (Leyte Geo Export)</span>
+              </div>
+            </div>
+
+            <!-- Slider 2: MVIP Link -->
+            <div class="space-y-1.5 pt-2 border-t border-slate-100">
+              <div class="flex justify-between items-center text-xs">
+                <span class="font-semibold text-slate-700">MVIP (Visayas–Mindanao) Transfer</span>
+                <span id="val-dispatch-vm" class="font-mono font-bold text-teal-600">250 MW (Visayas ➔ Mindanao)</span>
+              </div>
+              <input id="slider-dispatch-vm" type="range" min="-450" max="450" step="10" value="250" 
+                     class="w-full h-2 bg-slate-200 rounded-lg cursor-pointer">
+              <div class="flex justify-between text-[10px] text-slate-400">
+                <span>-450 MW (Mindanao Export)</span>
+                <span>0 MW</span>
+                <span>+450 MW (Visayas Export)</span>
+              </div>
+            </div>
+
+            <!-- Dispatch Scenarios Presets -->
+            <div class="pt-3 border-t border-slate-100">
+              <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-2">Preset Grid Dispatch Scenarios</span>
+              <div class="grid grid-cols-2 gap-2">
+                <button class="dispatch-preset-btn px-2.5 py-1.5 text-xs bg-slate-50 hover:bg-blue-50 hover:text-blue-700 border border-slate-200 rounded-lg text-left transition-all" data-preset="geothermal-export">
+                  🌋 <strong>Tongonan Geothermal</strong><br><span class="text-[10px] text-slate-500">Max export to Metro Manila</span>
+                </button>
+                <button class="dispatch-preset-btn px-2.5 py-1.5 text-xs bg-slate-50 hover:bg-teal-50 hover:text-teal-700 border border-slate-200 rounded-lg text-left transition-all" data-preset="mindanao-surplus">
+                  🌊 <strong>Mindanao Hydro Surplus</strong><br><span class="text-[10px] text-slate-500">Agus hydro export to Visayas</span>
+                </button>
+                <button class="dispatch-preset-btn px-2.5 py-1.5 text-xs bg-slate-50 hover:bg-blue-50 hover:text-blue-700 border border-slate-200 rounded-lg text-left transition-all" data-preset="luzon-support">
+                  ⚡ <strong>Luzon Baseload Support</strong><br><span class="text-[10px] text-slate-500">Luzon powers central islands</span>
+                </button>
+                <button class="dispatch-preset-btn px-2.5 py-1.5 text-xs bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-left transition-all" data-preset="balanced">
+                  ⚖️ <strong>Balanced Economy Dispatch</strong><br><span class="text-[10px] text-slate-500">Optimal losses distribution</span>
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Island Power Balance & Telemetry Summary -->
+          <div class="clean-card p-5 space-y-3">
+            <h3 class="text-sm font-bold text-slate-800 flex items-center space-x-2">
+              <i data-lucide="activity" class="w-4 h-4 text-emerald-600"></i>
+              <span>Live Island Grid Reserves & Import/Export Status</span>
+            </h3>
+
+            <div class="space-y-2.5 text-xs">
+              <!-- Luzon -->
+              <div class="p-2.5 bg-slate-50 rounded-lg border border-slate-100 flex items-center justify-between">
+                <div>
+                  <span class="font-bold text-slate-800">Luzon Grid</span>
+                  <span class="text-[10px] text-slate-400 block">Demand: ~10,500 MW • Max Interconnection: ±440 MW</span>
+                </div>
+                <div class="text-right">
+                  <span id="telemetry-luzon-net" class="font-mono font-bold text-blue-600 text-xs">+380 MW (Importing)</span>
+                </div>
+              </div>
+
+              <!-- Visayas -->
+              <div class="p-2.5 bg-slate-50 rounded-lg border border-slate-100 flex items-center justify-between">
+                <div>
+                  <span class="font-bold text-slate-800">Visayas Grid</span>
+                  <span class="text-[10px] text-slate-400 block">Demand: ~2,300 MW • Bridge Island Grid Hub</span>
+                </div>
+                <div class="text-right">
+                  <span id="telemetry-visayas-net" class="font-mono font-bold text-teal-600 text-xs">-130 MW (Exporting)</span>
+                </div>
+              </div>
+
+              <!-- Mindanao -->
+              <div class="p-2.5 bg-slate-50 rounded-lg border border-slate-100 flex items-center justify-between">
+                <div>
+                  <span class="font-bold text-slate-800">Mindanao Grid</span>
+                  <span class="text-[10px] text-slate-400 block">Demand: ~2,100 MW • Connected via MVIP</span>
+                </div>
+                <div class="text-right">
+                  <span id="telemetry-mindanao-net" class="font-mono font-bold text-emerald-600 text-xs">+250 MW (Importing)</span>
+                </div>
+              </div>
+            </div>
+
+            <p class="text-[11px] text-slate-400 italic pt-1">
+              *Real-time data feeds into WESM (Wholesale Electricity Spot Market) co-optimized energy and reserve scheduling.
+            </p>
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- TAB 2: LUZON–VISAYAS (LEYTE–LUZON HVDC) -->
+    <!-- ========================================================================= -->
+    <section id="pane-luzon-visayas" class="tab-pane hidden space-y-6">
+      
+      <!-- Hero / Header Card -->
+      <div class="clean-card p-6 bg-gradient-to-r from-blue-50/50 via-white to-white">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <div class="flex items-center space-x-2">
+              <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-800">Classic LCC Project</span>
+              <span class="text-xs text-slate-500">Commissioned: 1998</span>
+            </div>
+            <h2 class="text-xl font-black text-slate-900 mt-1.5">Leyte–Luzon HVDC Interconnection Project</h2>
+            <p class="text-xs sm:text-sm text-slate-600 max-w-3xl mt-1 leading-relaxed">
+              The pioneer high-voltage direct current link in the Philippines, linking the Tongonan geothermal power fields in Leyte to the Luzon load center in Metro Manila via a 440 MW, ±350 kV DC transmission corridor.
+            </p>
+          </div>
+
+          <div class="flex items-center space-x-3 bg-white p-3 rounded-xl border border-slate-200 shadow-xs">
+            <div class="text-center px-2">
+              <span class="text-[10px] text-slate-400 block uppercase font-bold">DC Voltage</span>
+              <span class="text-sm font-black text-blue-700">±350 kV</span>
+            </div>
+            <div class="h-8 w-px bg-slate-200"></div>
+            <div class="text-center px-2">
+              <span class="text-[10px] text-slate-400 block uppercase font-bold">Capacity</span>
+              <span class="text-sm font-black text-blue-700">440 MW</span>
+            </div>
+            <div class="h-8 w-px bg-slate-200"></div>
+            <div class="text-center px-2">
+              <span class="text-[10px] text-slate-400 block uppercase font-bold">Submarine Span</span>
+              <span class="text-sm font-black text-blue-700">21 km</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Technical Deep-Dive Cards Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        
+        <!-- Column 1: Geographic & Physical Route -->
+        <div class="clean-card p-5 space-y-3">
+          <div class="flex items-center space-x-2 text-blue-700 font-bold text-sm">
+            <i data-lucide="navigation" class="w-4 h-4"></i>
+            <span>Route & Cable Spans</span>
+          </div>
+          <ul class="text-xs text-slate-600 space-y-2.5">
+            <li class="flex items-start space-x-2">
+              <span class="text-blue-600 font-bold">•</span>
+              <span><strong>Overhead DC Transmission Line:</strong> 430 km of steel lattice towers traversing Camarines Sur, Albay, Sorsogon (Luzon) and Samar to Leyte.</span>
+            </li>
+            <li class="flex items-start space-x-2">
+              <span class="text-blue-600 font-bold">•</span>
+              <span><strong>San Bernardino Strait Submarine Cable:</strong> 21 km subsea crossing between Matnog (Sorsogon) and Cabacungan/San Isidro (Samar) with high tidal currents (up to 8 knots).</span>
+            </li>
+            <li class="flex items-start space-x-2">
+              <span class="text-blue-600 font-bold">•</span>
+              <span><strong>Double-Armor Cable Protection:</strong> Specially armored against strong underwater shear forces and maritime anchors.</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Column 2: Converter Station Architecture -->
+        <div class="clean-card p-5 space-y-3">
+          <div class="flex items-center space-x-2 text-blue-700 font-bold text-sm">
+            <i data-lucide="cpu" class="w-4 h-4"></i>
+            <span>Converter Stations</span>
+          </div>
+          <ul class="text-xs text-slate-600 space-y-2.5">
+            <li class="flex items-start space-x-2">
+              <span class="text-blue-600 font-bold">•</span>
+              <span><strong>Naga Converter Station (Luzon):</strong> Located in Camarines Sur. Inverts DC back to 230 kV AC for transmission up to Tayabas and Metro Manila.</span>
+            </li>
+            <li class="flex items-start space-x-2">
+              <span class="text-blue-600 font-bold">•</span>
+              <span><strong>Ormoc Converter Station (Visayas):</strong> Located in Leyte adjacent to Tongonan Geothermal Power Plant. Converts 230 kV AC to ±350 kV DC.</span>
+            </li>
+            <li class="flex items-start space-x-2">
+              <span class="text-blue-600 font-bold">•</span>
+              <span><strong>12-Pulse Thyristor Valve Bridges:</strong> Water-cooled thyristor stacks requiring massive AC harmonic filter yards (11th, 13th, High-pass).</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Column 3: Ground & Sea Electrodes -->
+        <div class="clean-card p-5 space-y-3">
+          <div class="flex items-center space-x-2 text-blue-700 font-bold text-sm">
+            <i data-lucide="anchor" class="w-4 h-4"></i>
+            <span>Electrode Return System</span>
+          </div>
+          <ul class="text-xs text-slate-600 space-y-2.5">
+            <li class="flex items-start space-x-2">
+              <span class="text-blue-600 font-bold">•</span>
+              <span><strong>Sea/Ground Electrodes:</strong> Specialized graphite/magnetite anode and cathode electrode beds in San Jose (Luzon) and Albuera (Leyte).</span>
+            </li>
+            <li class="flex items-start space-x-2">
+              <span class="text-blue-600 font-bold">•</span>
+              <span><strong>Monopolar Ground Return Mode:</strong> If one pole suffers a line fault or maintenance, the link transfers 220 MW (50% power) continuously via sea return.</span>
+            </li>
+            <li class="flex items-start space-x-2">
+              <span class="text-blue-600 font-bold">•</span>
+              <span><strong>Metallic Return Capability:</strong> Uses dedicated neutral conductors to eliminate ground currents in sensitive ecological areas.</span>
+            </li>
+          </ul>
+        </div>
+
+      </div>
+
+      <!-- Engineering Timeline & Significance -->
+      <div class="clean-card p-5 bg-slate-50/50">
+        <h3 class="text-sm font-bold text-slate-800 mb-3 flex items-center space-x-2">
+          <i data-lucide="history" class="w-4 h-4 text-slate-600"></i>
+          <span>Strategic Role & Grid Impact</span>
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-600 leading-relaxed">
+          <p>
+            Before this interconnection, Leyte's abundant 700+ MW geothermal energy was stranded locally on a small island grid. The Leyte-Luzon HVDC allowed the National Power Corporation (NPC) and now NGCP to transmit clean baseload renewable energy directly into Metro Manila, reducing Luzon's fossil fuel dependence.
+          </p>
+          <p>
+            Crucially, the HVDC link acted as an <strong>electrical firewall</strong> during catastrophic events like Typhoon Yolanda (Haiyan) in 2013 and major earthquake events, allowing Luzon's grid to remain unaffected even when Visayas transmission was completely incapacitated.
+          </p>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- TAB 3: VISAYAS–MINDANAO (MVIP / VMIP) -->
+    <!-- ========================================================================= -->
+    <section id="pane-visayas-mindanao" class="tab-pane hidden space-y-6">
+      
+      <!-- Hero / Header Card -->
+      <div class="clean-card p-6 bg-gradient-to-r from-teal-50/50 via-white to-white">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <div class="flex items-center space-x-2">
+              <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-teal-100 text-teal-800">State-of-the-Art VSC-MMC</span>
+              <span class="text-xs text-slate-500">Commercial Operation: 2023–2024</span>
+            </div>
+            <h2 class="text-xl font-black text-slate-900 mt-1.5">Mindanao–Visayas Interconnection Project (MVIP)</h2>
+            <p class="text-xs sm:text-sm text-slate-600 max-w-3xl mt-1 leading-relaxed">
+              The landmark infrastructure project completing the <strong>"One Grid Philippines"</strong> vision. Uses advanced Voltage Source Converter (VSC) technology with Modular Multilevel Converters (MMC) across a 92-kilometer deep-water submarine cable in the Bohol Sea.
+            </p>
+          </div>
+
+          <div class="flex items-center space-x-3 bg-white p-3 rounded-xl border border-slate-200 shadow-xs">
+            <div class="text-center px-2">
+              <span class="text-[10px] text-slate-400 block uppercase font-bold">DC Voltage</span>
+              <span class="text-sm font-black text-teal-700">±350 kV</span>
+            </div>
+            <div class="h-8 w-px bg-slate-200"></div>
+            <div class="text-center px-2">
+              <span class="text-[10px] text-slate-400 block uppercase font-bold">Capacity</span>
+              <span class="text-sm font-black text-teal-700">450 MW (900 MW Exp.)</span>
+            </div>
+            <div class="h-8 w-px bg-slate-200"></div>
+            <div class="text-center px-2">
+              <span class="text-[10px] text-slate-400 block uppercase font-bold">Submarine Span</span>
+              <span class="text-sm font-black text-teal-700">92 km</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MVIP Key Highlights -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        
+        <!-- Col 1: Deep Water Bohol Sea Cable -->
+        <div class="clean-card p-5 space-y-3">
+          <div class="flex items-center space-x-2 text-teal-700 font-bold text-sm">
+            <i data-lucide="waves" class="w-4 h-4"></i>
+            <span>92-km Deep-Water Submarine Crossing</span>
+          </div>
+          <ul class="text-xs text-slate-600 space-y-2.5">
+            <li class="flex items-start space-x-2">
+              <span class="text-teal-600 font-bold">•</span>
+              <span><strong>Subsea Cable Route:</strong> Traverses from Santander (southern tip of Cebu) across the Bohol Sea / Mindanao Sea to Dapitan City (Zamboanga del Norte).</span>
+            </li>
+            <li class="flex items-start space-x-2">
+              <span class="text-teal-600 font-bold">•</span>
+              <span><strong>Massive Water Depths:</strong> Cable reaches ocean depths of up to <strong>650 meters</strong> with advanced fiber-optic monitoring cores.</span>
+            </li>
+            <li class="flex items-start space-x-2">
+              <span class="text-teal-600 font-bold">•</span>
+              <span><strong>±350 kV XLPE DC Cable:</strong> Solid extruded cross-linked polyethylene dielectric with zero environmental oil leakage risk.</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Col 2: VSC-MMC Converter Stations -->
+        <div class="clean-card p-5 space-y-3">
+          <div class="flex items-center space-x-2 text-teal-700 font-bold text-sm">
+            <i data-lucide="cpu" class="w-4 h-4"></i>
+            <span>Dumanjug & Lala VSC Converter Stations</span>
+          </div>
+          <ul class="text-xs text-slate-600 space-y-2.5">
+            <li class="flex items-start space-x-2">
+              <span class="text-teal-600 font-bold">•</span>
+              <span><strong>Dumanjug CS (Cebu):</strong> Interfaced with Cebu 230 kV AC backbone to channel power to/from the Central Visayas industrial hub.</span>
+            </li>
+            <li class="flex items-start space-x-2">
+              <span class="text-teal-600 font-bold">•</span>
+              <span><strong>Lala CS (Lanao del Norte):</strong> Connected to Mindanao 230 kV network, balancing Agus-Pulangi hydro generation and baseload coal.</span>
+            </li>
+            <li class="flex items-start space-x-2">
+              <span class="text-teal-600 font-bold">•</span>
+              <span><strong>Modular Multilevel Converters (MMC):</strong> Uses thousands of IGBT valves to generate near-ideal sine waves without AC harmonic filters.</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Col 3: Why VSC is Superior for MVIP -->
+        <div class="clean-card p-5 space-y-3">
+          <div class="flex items-center space-x-2 text-teal-700 font-bold text-sm">
+            <i data-lucide="award" class="w-4 h-4"></i>
+            <span>VSC Technical Advantages</span>
+          </div>
+          <ul class="text-xs text-slate-600 space-y-2.5">
+            <li class="flex items-start space-x-2">
+              <span class="text-teal-600 font-bold">•</span>
+              <span><strong>Decoupled P-Q Control:</strong> Can inject or absorb up to ±200 MVAR of reactive power dynamically, supporting weak island grid voltages like a STATCOM.</span>
+            </li>
+            <li class="flex items-start space-x-2">
+              <span class="text-teal-600 font-bold">•</span>
+              <span><strong>Black-Start Capability:</strong> In the event of a total blackout in Mindanao or Cebu, MVIP can energize the entire regional grid from the other side.</span>
+            </li>
+            <li class="flex items-start space-x-2">
+              <span class="text-teal-600 font-bold">•</span>
+              <span><strong>Instantaneous Power Reversal:</strong> Direction of power flow reverses in milliseconds simply by changing DC current flow without polarity switches.</span>
+            </li>
+          </ul>
+        </div>
+
+      </div>
+
+      <!-- One Grid Philippines Economic Impact -->
+      <div class="clean-card p-5 bg-slate-50/50">
+        <h3 class="text-sm font-bold text-slate-800 mb-3 flex items-center space-x-2">
+          <i data-lucide="trending-up" class="w-4 h-4 text-teal-600"></i>
+          <span>Market Integration & Energy Security Benefits</span>
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-slate-600 leading-relaxed">
+          <div class="p-3 bg-white rounded-lg border border-slate-200">
+            <strong class="text-slate-800 block mb-1">1. Sharing of Spinning Reserves</strong>
+            Luzon, Visayas, and Mindanao can now share ancillary reserves, dramatically lowering the overall cost of generation capacity and preventing forced rotational brownouts.
+          </div>
+          <div class="p-3 bg-white rounded-lg border border-slate-200">
+            <strong class="text-slate-800 block mb-1">2. Seasonal Hydro Optimization</strong>
+            During rainy season in Mindanao, excess hydropower can be exported north to Cebu and Manila. During dry periods, baseload power flows south to Mindanao.
+          </div>
+          <div class="p-3 bg-white rounded-lg border border-slate-200">
+            <strong class="text-slate-800 block mb-1">3. Unified WESM Spot Market</strong>
+            Enables full price convergence across the Philippine electricity market, allowing consumer electric coops and distribution utilities to buy the cheapest marginal MW.
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- TAB 4: "WHAT-IF NGCP INSTALLED HVAC?" INTERACTIVE LAB -->
+    <!-- ========================================================================= -->
+    <section id="pane-hvac-whatif" class="tab-pane hidden space-y-6">
+      
+      <!-- Banner / Problem Statement -->
+      <div class="clean-card p-6 bg-gradient-to-r from-rose-50/40 via-white to-white border-rose-200">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <div class="flex items-center space-x-2">
+              <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-100 text-rose-800">Engineering Comparative Study</span>
+              <span class="text-xs text-slate-500">Power Systems & Physics Analysis</span>
+            </div>
+            <h2 class="text-xl font-black text-slate-900 mt-1.5">What If NGCP Installed High Voltage AC (HVAC) Instead?</h2>
+            <p class="text-xs sm:text-sm text-slate-600 max-w-3xl mt-1 leading-relaxed">
+              Why did NGCP and transmission planners select HVDC over conventional HVAC for the 21 km San Bernardino and 92 km Bohol Sea submarine crossings? Explore the physics of submarine cable capacitance, charging current derating, Ferranti effect, and cascading blackout risks.
+            </p>
+          </div>
+
+          <div class="flex items-center space-x-2">
+            <span class="badge-clean bg-rose-50 text-rose-700 border border-rose-200 text-xs font-bold">
+              Critical Cable Distance: ~40–60 km
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Verdict Banner -->
+      <div id="stat-verdict-banner" class="p-4 rounded-xl border bg-amber-50 border-amber-200 text-amber-900 text-xs font-medium">
+        <!-- Dynamically updated by hvac-simulator.js -->
+      </div>
+
+      <!-- Simulator Controls & Real-Time Physics Dashboard -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Left 4 Cols: Physics Parameter Controls -->
+        <div class="lg:col-span-4 space-y-5">
+          <div class="clean-card p-5 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 class="text-sm font-bold text-slate-800 flex items-center space-x-2">
+                <i data-lucide="sliders" class="w-4 h-4 text-rose-600"></i>
+                <span>Cable Circuit Parameters</span>
+              </h3>
+              <span class="text-[10px] text-slate-400">Physics Engine</span>
+            </div>
+
+            <!-- Slider 1: Submarine Length -->
+            <div class="space-y-1">
+              <div class="flex justify-between items-center text-xs">
+                <span class="font-semibold text-slate-700">Submarine Cable Length</span>
+                <span id="val-sim-length" class="font-mono font-bold text-rose-600">92 km</span>
+              </div>
+              <input id="sim-length" type="range" min="5" max="200" step="1" value="92" 
+                     class="w-full h-2 bg-slate-200 rounded-lg cursor-pointer accent-rose-600">
+              <div class="flex justify-between text-[10px] text-slate-400">
+                <span>5 km</span>
+                <span>92 km (MVIP)</span>
+                <span>200 km</span>
+              </div>
+            </div>
+
+            <!-- Slider 2: AC Voltage -->
+            <div class="space-y-1">
+              <div class="flex justify-between items-center text-xs">
+                <span class="font-semibold text-slate-700">Transmission Voltage</span>
+                <span id="val-sim-voltage" class="font-mono font-bold text-slate-800">230 kV</span>
+              </div>
+              <input id="sim-voltage" type="range" min="69" max="500" step="23" value="230" 
+                     class="w-full h-2 bg-slate-200 rounded-lg cursor-pointer accent-rose-600">
+              <div class="flex justify-between text-[10px] text-slate-400">
+                <span>69 kV</span>
+                <span>230 kV (Standard)</span>
+                <span>500 kV</span>
+              </div>
+            </div>
+
+            <!-- Slider 3: Thermal Rating MVA -->
+            <div class="space-y-1">
+              <div class="flex justify-between items-center text-xs">
+                <span class="font-semibold text-slate-700">Rated Cable Thermal Capacity</span>
+                <span id="val-sim-mva" class="font-mono font-bold text-slate-800">500 MVA</span>
+              </div>
+              <input id="sim-mva" type="range" min="100" max="1200" step="50" value="500" 
+                     class="w-full h-2 bg-slate-200 rounded-lg cursor-pointer accent-rose-600">
+            </div>
+
+            <!-- Slider 4: Cable Capacitance -->
+            <div class="space-y-1">
+              <div class="flex justify-between items-center text-xs">
+                <span class="font-semibold text-slate-700">Subsea XLPE Capacitance (C)</span>
+                <span id="val-sim-capacitance" class="font-mono font-bold text-slate-800">0.22 µF/km</span>
+              </div>
+              <input id="sim-capacitance" type="range" min="0.10" max="0.35" step="0.01" value="0.22" 
+                     class="w-full h-2 bg-slate-200 rounded-lg cursor-pointer accent-rose-600">
+              <span class="text-[10px] text-slate-400 block">*Submarine cables have 20x higher capacitance than overhead lines!</span>
+            </div>
+
+            <!-- Financial Tariff & Capacity Factor Inputs -->
+            <div class="pt-3 border-t border-slate-100 space-y-3">
+              <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">ERC System Loss & Financial Valuation</span>
+              
+              <div class="space-y-1">
+                <div class="flex justify-between items-center text-xs">
+                  <span class="text-slate-700 font-medium">Electricity Tariff / Loss Rate</span>
+                  <span id="val-sim-tariff" class="font-mono font-bold text-emerald-700">₱6.50 / kWh</span>
+                </div>
+                <input id="sim-tariff" type="range" min="3.00" max="12.00" step="0.25" value="6.50" 
+                       class="w-full h-2 bg-slate-200 rounded-lg cursor-pointer accent-emerald-600">
+                <div class="flex justify-between text-[10px] text-slate-400">
+                  <span>₱3.00</span>
+                  <span>₱6.50 (ERC Avg)</span>
+                  <span>₱12.00</span>
+                </div>
+              </div>
+
+              <div class="space-y-1">
+                <div class="flex justify-between items-center text-xs">
+                  <span class="text-slate-700 font-medium">Annual Capacity Factor</span>
+                  <span id="val-sim-cf" class="font-mono font-bold text-slate-800">75%</span>
+                </div>
+                <input id="sim-cf" type="range" min="40" max="95" step="5" value="75" 
+                       class="w-full h-2 bg-slate-200 rounded-lg cursor-pointer accent-blue-600">
+                <div class="flex justify-between text-[10px] text-slate-400">
+                  <span>40%</span>
+                  <span>75% (Base)</span>
+                  <span>95%</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Preset Scenarios -->
+            <div class="pt-3 border-t border-slate-100">
+              <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-2">Preset Philippine Spans</span>
+              <div class="space-y-1.5">
+                <button class="scenario-preset-btn w-full px-3 py-1.5 text-xs bg-slate-50 hover:bg-rose-50 hover:text-rose-700 border border-slate-200 rounded-lg text-left transition-all" data-scenario="mvip-bohol">
+                  🌊 <strong>MVIP Bohol Sea Crossing (92 km, 230kV)</strong>
+                </button>
+                <button class="scenario-preset-btn w-full px-3 py-1.5 text-xs bg-slate-50 hover:bg-blue-50 hover:text-blue-700 border border-slate-200 rounded-lg text-left transition-all" data-scenario="san-bernardino">
+                  ⚡ <strong>San Bernardino Strait (21 km, 230kV)</strong>
+                </button>
+                <button class="scenario-preset-btn w-full px-3 py-1.5 text-xs bg-slate-50 hover:bg-purple-50 hover:text-purple-700 border border-slate-200 rounded-lg text-left transition-all" data-scenario="deep-sea-150">
+                  ⚓ <strong>Ultra Long Deep-Sea Span (150 km, 345kV)</strong>
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Stability / Fault Collapse Stress-Test Module -->
+          <div class="clean-card p-5 space-y-3">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+              <h3 class="text-sm font-bold text-slate-800 flex items-center space-x-2">
+                <i data-lucide="shield-alert" class="w-4 h-4 text-amber-600"></i>
+                <span>Grid Stability & Fault Stress Test</span>
+              </h3>
+            </div>
+
+            <p class="text-xs text-slate-600">
+              Simulate a sudden trip of a 300 MW generator in Visayas causing frequency to plunge to <strong>48.80 Hz</strong>.
+            </p>
+
+            <div class="flex space-x-2">
+              <button id="btn-fault-visayas" class="flex-1 px-3 py-2 text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white rounded-lg transition-all shadow-xs flex items-center justify-center space-x-1">
+                <i data-lucide="zap-off" class="w-3.5 h-3.5"></i>
+                <span>Trigger Visayas Fault</span>
+              </button>
+              <button id="btn-fault-reset" class="px-3 py-2 text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-all border border-slate-200">
+                Reset
+              </button>
+            </div>
+
+            <div id="fault-sim-output">
+              <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-500">
+                Click "Trigger Visayas Fault" to observe asynchronous HVDC firewalling vs synchronous HVAC blackout cascading.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right 8 Cols: Real-Time Charts, System Losses & ERC Capex Cards -->
+        <div class="lg:col-span-8 space-y-5">
+          
+          <!-- Key Metric Stats Grid -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            
+            <div class="clean-card p-3.5 bg-white">
+              <span class="text-[11px] text-slate-400 block font-medium">HVAC Usable Active Power</span>
+              <span id="stat-hvac-usable" class="text-sm sm:text-base font-black text-rose-600">340 MW (68%)</span>
+              <span class="text-[10px] text-rose-500 block mt-0.5">Capacity eaten by charging</span>
+            </div>
+
+            <div class="clean-card p-3.5 bg-white">
+              <span class="text-[11px] text-slate-400 block font-medium">HVDC Usable Active Power</span>
+              <span id="stat-hvdc-usable" class="text-sm sm:text-base font-black text-blue-600">450 MW (100%)</span>
+              <span class="text-[10px] text-emerald-600 block mt-0.5">Zero capacitive derating</span>
+            </div>
+
+            <div class="clean-card p-3.5 bg-white">
+              <span class="text-[11px] text-slate-400 block font-medium">Cable Reactive Power ($Q_c$)</span>
+              <span id="stat-hvac-qc" class="text-sm sm:text-base font-black text-slate-800">367.1 MVAR</span>
+              <span class="text-[10px] text-slate-400 block mt-0.5">Requires massive shunt reactors</span>
+            </div>
+
+            <div class="clean-card p-3.5 bg-white">
+              <span class="text-[11px] text-slate-400 block font-medium">HVAC Zero-Capacity Distance</span>
+              <span id="stat-crit-length" class="text-sm sm:text-base font-black text-slate-800">125.4 km</span>
+              <span class="text-[10px] text-slate-400 block mt-0.5">Length where active MW = 0</span>
+            </div>
+
+          </div>
+
+          <!-- SYSTEM LOSSES & ERC INVESTMENT COST FINANCIAL BREAKDOWN CARD -->
+          <div class="clean-card p-5 bg-gradient-to-r from-emerald-50/40 via-white to-white border-emerald-200">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-3">
+              <div class="flex items-center space-x-2">
+                <span class="p-1.5 bg-emerald-100 text-emerald-800 rounded-lg">
+                  <i data-lucide="badge-dollar-sign" class="w-4 h-4"></i>
+                </span>
+                <div>
+                  <h3 class="text-sm font-bold text-slate-900">System Losses & ERC Investment Cost Analysis (in Millions)</h3>
+                  <p class="text-xs text-slate-500">Valued against ERC Philippine Grid tariff rates and official ERC Capex dockets</p>
+                </div>
+              </div>
+              <span class="badge-clean bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold">
+                ERC Case No. 2017-057 RC
+              </span>
+            </div>
+
+            <!-- Financial Metrics Grid (In Millions of Pesos & USD) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+              
+              <div class="p-3 bg-white rounded-xl border border-slate-200 shadow-xs">
+                <span class="text-[11px] text-slate-400 font-medium block">HVDC System Loss</span>
+                <span id="stat-hvdc-loss-mw" class="text-xs sm:text-sm font-bold text-blue-700 block mt-0.5">10.3 MW (2.7%) • 67.4 GWh/yr</span>
+                <span class="text-[10px] text-slate-500 block mt-1">Converters + DC I²R</span>
+              </div>
+
+              <div class="p-3 bg-white rounded-xl border border-rose-100 shadow-xs">
+                <span class="text-[11px] text-rose-500 font-medium block">HVAC What-If System Loss</span>
+                <span id="stat-hvac-loss-mw" class="text-xs sm:text-sm font-bold text-rose-700 block mt-0.5">27.5 MW (7.2%) • 180.7 GWh/yr</span>
+                <span class="text-[10px] text-rose-500 block mt-1">Charging Current + Dielectric</span>
+              </div>
+
+              <div class="p-3 bg-emerald-50/70 rounded-xl border border-emerald-200 shadow-xs">
+                <span class="text-[11px] text-emerald-800 font-bold block">Annual Loss Savings (HVDC)</span>
+                <span id="stat-annual-loss-php" class="text-xs sm:text-sm font-black text-emerald-700 block mt-0.5">₱736.5M / yr ($13.15M/yr)</span>
+                <span class="text-[10px] text-emerald-600 block mt-1">Saved electricity each year</span>
+              </div>
+
+              <div class="p-3 bg-emerald-50/70 rounded-xl border border-emerald-200 shadow-xs">
+                <span class="text-[11px] text-emerald-800 font-bold block">30-Yr Lifecycle Loss Savings</span>
+                <span id="stat-30yr-loss-php" class="text-xs sm:text-sm font-black text-emerald-700 block mt-0.5">₱22.10 Billion ($394.6M)</span>
+                <span class="text-[10px] text-emerald-600 block mt-1">Cumulative consumer savings</span>
+              </div>
+
+            </div>
+
+            <!-- ERC Filed Project Costs Benchmark -->
+            <div id="stat-capex-comparison" class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+              <!-- Dynamically populated by hvac-simulator.js -->
+            </div>
+          </div>
+
+          <!-- Charts Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            
+            <!-- Chart 1: Active Power Drop-Off -->
+            <div class="clean-card p-4">
+              <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
+                <span class="text-xs font-bold text-slate-800">Usable Active Power vs Submarine Distance</span>
+                <span class="text-[10px] text-slate-400">P_usable = √(S² - Q_c²)</span>
+              </div>
+              <div class="h-60">
+                <canvas id="chart-power-distance"></canvas>
+              </div>
+            </div>
+
+            <!-- Chart 2: Cost Break-Even Curve in ₱ Billions -->
+            <div class="clean-card p-4">
+              <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
+                <span class="text-xs font-bold text-slate-800">Total 30-Yr Project Cost (CAPEX + Losses in ₱ Billion)</span>
+                <span class="text-[10px] text-teal-600 font-semibold">Break-Even: ~45 km Subsea</span>
+              </div>
+              <div class="h-60">
+                <canvas id="chart-cost-distance"></canvas>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Technical Comparison Matrix Table -->
+          <div class="clean-card p-5">
+            <h3 class="text-sm font-bold text-slate-800 mb-3 flex items-center space-x-2">
+              <i data-lucide="table" class="w-4 h-4 text-blue-600"></i>
+              <span>Comprehensive Engineering & Financial Comparison: HVDC vs HVAC for Philippine Grid</span>
+            </h3>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr class="bg-slate-50 border-b border-slate-200 text-slate-600">
+                    <th class="p-2.5 font-bold">Dimension</th>
+                    <th class="p-2.5 font-bold text-blue-700">HVDC (High-Voltage Direct Current)</th>
+                    <th class="p-2.5 font-bold text-rose-700">HVAC (High-Voltage Alternating Current)</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 text-slate-700">
+                  <tr>
+                    <td class="p-2.5 font-semibold text-slate-800">ERC Approved Investment Cost (Capex)</td>
+                    <td class="p-2.5 text-emerald-700"><strong>₱51.30 Billion (~$916M USD)</strong> filed under ERC Case No. 2017-057 RC. Lower subsea cable cost (2 conductors) and zero offshore platforms.</td>
+                    <td class="p-2.5 text-rose-700"><strong>~₱64.20 Billion (~$1.15 Billion USD)</strong>. Requires 3-phase subsea double-circuits, deep-water offshore platforms, and massive STATCOM shunt reactor yards.</td>
+                  </tr>
+                  <tr>
+                    <td class="p-2.5 font-semibold text-slate-800">Annual System Losses & Cost (PHP/yr)</td>
+                    <td class="p-2.5 text-emerald-700"><strong>~2.7% Loss (~67 GWh/yr, ~₱461M/yr).</strong> Steady DC current flows without dielectric heating or reactive current inflation.</td>
+                    <td class="p-2.5 text-rose-700"><strong>~7.2% to 8.5% Loss (~180 GWh/yr, ~₱1,230M/yr).</strong> Heavy continuous $I_c$ charging current causes <strong>₱736+ Million / year higher losses</strong>!</td>
+                  </tr>
+                  <tr>
+                    <td class="p-2.5 font-semibold text-slate-800">30-Year Lifecycle Loss Cost</td>
+                    <td class="p-2.5 text-emerald-700"><strong>₱13.84 Billion</strong> cumulative loss valuation.</td>
+                    <td class="p-2.5 text-rose-700"><strong>₱36.90 Billion</strong> (Over <strong>₱23 Billion PHP wasted</strong> in system loss charges passed to electric consumers!).</td>
+                  </tr>
+                  <tr>
+                    <td class="p-2.5 font-semibold text-slate-800">Subsea Cable Charging Current ($I_c$)</td>
+                    <td class="p-2.5 text-emerald-700"><strong>Zero ($I_c = 0$ in DC).</strong> Cable transfers 100% active MW without distance derating.</td>
+                    <td class="p-2.5 text-rose-700"><strong>Severe ($I_c = 2\pi f C V$).</strong> 92 km subsea cable generates ~367 MVAR, choking active capacity.</td>
+                  </tr>
+                  <tr>
+                    <td class="p-2.5 font-semibold text-slate-800">Grid Synchronization & Stability</td>
+                    <td class="p-2.5 text-emerald-700"><strong>Asynchronous Firewall:</strong> Luzon, Visayas, and Mindanao can run with frequency differences; faults are completely buffered.</td>
+                    <td class="p-2.5 text-rose-700"><strong>Rigid Synchronous Lock:</strong> A generator trip in Cebu violently swings rotor angles in Luzon/Mindanao, risking cascading national blackouts.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- TAB 5: CONVERTER STATION SCHEMATICS (LCC VS VSC-MMC) -->
+    <!-- ========================================================================= -->
+    <section id="pane-converter-tech" class="tab-pane hidden space-y-6">
+      <div id="converter-diagram-container">
+        <!-- Rendered by converter-diagrams.js -->
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- TAB 6: KNOWLEDGE BASE, FORMULAS & GRID CODE -->
+    <!-- ========================================================================= -->
+    <section id="pane-knowledge-base" class="tab-pane hidden space-y-6">
+      
+      <div class="clean-card p-6 bg-white">
+        <h2 class="text-lg font-bold text-slate-900 mb-2">Technical Reference & Mathematical Formulations</h2>
+        <p class="text-xs text-slate-500 mb-6">Fundamental electrical engineering equations governing Philippine transmission line dynamics and HVDC/HVAC trade-offs.</p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          
+          <!-- Formula Box 1: Submarine Cable Charging Current -->
+          <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+            <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider text-blue-700">1. Submarine Cable Capacitive Charging Current</h3>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              In AC cables, the continuous dielectric displacement current per unit length is given by:
+            </p>
+            <div class="formula-box text-xs text-blue-900">
+              $$I_c = \omega \cdot C \cdot \frac{V_{LL}}{\sqrt{3}} = 2\pi f \cdot C \cdot \frac{V_{LL}}{\sqrt{3}} \quad [\text{A/km}]$$
+            </div>
+            <p class="text-[11px] text-slate-500">
+              Where $f = 60\text{ Hz}$ in the Philippines, $C \approx 0.22\ \mu\text{F/km}$ for subsea XLPE, and $V_{LL} = 230\text{ kV}$.
+            </p>
+          </div>
+
+          <!-- Formula Box 2: Total Reactive Power Generated -->
+          <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+            <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider text-blue-700">2. Total Reactive Power Generation ($Q_c$)</h3>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              Total 3-phase reactive power generated over cable length $L$:
+            </p>
+            <div class="formula-box text-xs text-blue-900">
+              $$Q_c = \omega \cdot C \cdot V_{LL}^2 \cdot L = 2\pi f C V_{LL}^2 L \quad [\text{MVAR}]$$
+            </div>
+            <p class="text-[11px] text-slate-500">
+              Notice that $Q_c$ scales quadratically with voltage ($V^2$) and linearly with distance ($L$).
+            </p>
+          </div>
+
+          <!-- Formula Box 3: Derated Active Power Transmission -->
+          <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+            <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider text-rose-700">3. Usable Active Power Derating ($P_{\text{usable}}$)</h3>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              Due to thermal current limitations ($S_{\text{rated}} = \sqrt{P^2 + Q^2}$), the remaining active capacity is:
+            </p>
+            <div class="formula-box text-xs text-rose-900 border-rose-500">
+              $$P_{\text{usable}}(L) = \sqrt{S_{\text{rated}}^2 - Q_c(L)^2} = \sqrt{S_{\text{rated}}^2 - \left(\omega C V_{LL}^2 L\right)^2}$$
+            </div>
+            <p class="text-[11px] text-slate-500">
+              When $Q_c(L) = S_{\text{rated}}$, the cable is 100% occupied by reactive current, yielding $P_{\text{usable}} = 0\text{ MW}$.
+            </p>
+          </div>
+
+          <!-- Formula Box 4: Critical Length -->
+          <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+            <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider text-rose-700">4. Critical Submarine Cable Distance ($L_{\text{crit}}$)</h3>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              The theoretical maximum distance an AC cable can be operated without midpoint compensation:
+            </p>
+            <div class="formula-box text-xs text-rose-900 border-rose-500">
+              $$L_{\text{crit}} = \frac{S_{\text{rated}}}{\omega \cdot C \cdot V_{LL}^2} = \frac{S_{\text{rated}}}{2\pi f C V_{LL}^2}$$
+            </div>
+            <p class="text-[11px] text-slate-500">
+              For a 500 MVA, 230 kV cable at 60 Hz, $L_{\text{crit}} \approx 125\text{ km}$. However, voltage regulation issues (Ferranti effect) become critical beyond 40 km!
+            </p>
+          </div>
+
+        </div>
+
+        <!-- NGCP Philippine Grid Code (PGC) Compliance Section -->
+        <div class="mt-8 pt-6 border-t border-slate-200">
+          <h3 class="text-sm font-bold text-slate-800 mb-3 flex items-center space-x-2">
+            <i data-lucide="shield-check" class="w-4 h-4 text-emerald-600"></i>
+            <span>Philippine Grid Code (PGC) Connection & Performance Standards</span>
+          </h3>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs text-slate-600">
+            <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
+              <strong class="text-slate-800 block mb-1">Frequency Limits (60 Hz)</strong>
+              • Normal: 59.70 Hz – 60.30 Hz<br>
+              • Extreme High: 62.00 Hz<br>
+              • Underfrequency Load Shedding (UFLS): 59.20 Hz trigger
+            </div>
+            <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
+              <strong class="text-slate-800 block mb-1">Voltage Limits (230 kV / 500 kV)</strong>
+              • Continuous Operation: 0.95 p.u. to 1.05 p.u.<br>
+              • Contingency (N-1): 0.90 p.u. to 1.10 p.u.<br>
+              • Total Harmonic Distortion (THD): &lt; 1.5%
+            </div>
+            <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
+              <strong class="text-slate-800 block mb-1">Fault Ride-Through (FRT)</strong>
+              • HVDC converters must stay connected during AC grid three-phase faults up to 150 ms and restore active power within 100 ms of clearance.
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- CLEAN FOOTER -->
+  <footer class="bg-white border-t border-slate-200 py-6 mt-12 pb-24 md:pb-6">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+      <div class="flex items-center space-x-2">
+        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+        <span>Philippine Grid HVDC & HVAC Explorer • Built with HTML5, CSS3, JavaScript, Tailwind, and Chart.js</span>
+      </div>
+      <div>
+        <span>National Grid Corporation of the Philippines (NGCP) Grid Architecture Study</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- MOBILE-FIRST BOTTOM NAVIGATION BAR (Apple iOS & Android Optimized) -->
+  <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 z-50 px-2 py-1.5 flex justify-around items-center shadow-lg safe-bottom">
+    <button class="mobile-nav-btn active flex flex-col items-center justify-center p-1.5 text-blue-600 font-medium transition-colors" data-tab="overview">
+      <i data-lucide="map" class="w-5 h-5"></i>
+      <span class="text-[10px] mt-0.5">Map</span>
+    </button>
+    <button class="mobile-nav-btn flex flex-col items-center justify-center p-1.5 text-slate-500 hover:text-slate-800 font-medium transition-colors" data-tab="luzon-visayas">
+      <i data-lucide="zap" class="w-5 h-5"></i>
+      <span class="text-[10px] mt-0.5">Leyte-Luzon</span>
+    </button>
+    <button class="mobile-nav-btn flex flex-col items-center justify-center p-1.5 text-slate-500 hover:text-slate-800 font-medium transition-colors" data-tab="visayas-mindanao">
+      <i data-lucide="link-2" class="w-5 h-5"></i>
+      <span class="text-[10px] mt-0.5">MVIP</span>
+    </button>
+    <button class="mobile-nav-btn flex flex-col items-center justify-center p-1.5 text-rose-600 font-bold transition-colors" data-tab="hvac-whatif">
+      <i data-lucide="help-circle" class="w-5 h-5"></i>
+      <span class="text-[10px] mt-0.5">HVAC?</span>
+    </button>
+    <button class="mobile-nav-btn flex flex-col items-center justify-center p-1.5 text-slate-500 hover:text-slate-800 font-medium transition-colors" data-tab="converter-tech">
+      <i data-lucide="cpu" class="w-5 h-5"></i>
+      <span class="text-[10px] mt-0.5">Converters</span>
+    </button>
+  </nav>
+
+  <!-- Scripts -->
+  <script src="hvdc-map.js"></script>
+  <script src="hvac-simulator.js"></script>
+  <script src="converter-diagrams.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
